@@ -1,5 +1,5 @@
-# reinforcement-learning
-Reinforcement learning assigments
+# Reinforcement learning
+Reinforcement learning practice
 
 ## lab 1
 ### Basic maze vs minataur problem
