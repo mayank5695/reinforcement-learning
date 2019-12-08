@@ -26,8 +26,8 @@ class DQNAgent:
         # Modify here
 
         # Set hyper parameters for the DQN. Do not adjust those labeled as Fixed.
-        self.discount_factor = 0.99
-        self.learning_rate = 0.0001
+        self.discount_factor = 0.995
+        self.learning_rate = 0.00025
         self.epsilon = 0.02  # Fixed
         self.batch_size = 32  # Fixed
         self.memory_size = 2000
@@ -68,7 +68,7 @@ class DQNAgent:
         model.add(Dense(32, activation='relu',
                         kernel_initializer='he_uniform'))
 
-        model.add(Dense(8, activation='relu',
+        model.add(Dense(16, activation='relu',
                         kernel_initializer='he_uniform'))
 
         model.add(Dense(self.action_size, activation='linear'))
@@ -162,14 +162,14 @@ class DQNAgent:
         pylab.plot(episodes, max_q_mean, 'b')
         pylab.xlabel("Episodes")
         pylab.ylabel("Average Q Value")
-        # pylab.savefig("qvalues_24_mem100k.png")
+        pylab.savefig("qvalues_final_double_hyp.png")
         pylab.show()
         pylab.figure(1)
         pylab.plot(episodes, scores, 'b')
         pylab.xlabel("Episodes")
         pylab.ylabel("Score")
         pylab.show()
-        # pylab.savefig("scores_24_mem100k.png")
+        pylab.savefig("scores_final_double_hyp.png")
 
 
 ###############################################################################
