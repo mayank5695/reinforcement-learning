@@ -27,10 +27,10 @@ class DQNAgent:
 
         # Set hyper parameters for the DQN. Do not adjust those labeled as Fixed.
         self.discount_factor = 0.995
-        self.learning_rate = 0.0001
+        self.learning_rate = 0.00025
         self.epsilon = 0.02  # Fixed
         self.batch_size = 32  # Fixed
-        self.memory_size = 2000
+        self.memory_size = 10000
         self.train_start = 1000  # Fixed
         self.target_update_frequency = 1
 
@@ -57,7 +57,7 @@ class DQNAgent:
     def build_model(self):
         model = Sequential()
 
-        model.add(Dense(64, input_shape=(self.state_size,), activation='relu', kernel_initializer='he_uniform'))
+        model.add(Dense(128, input_shape=(self.state_size,), activation='relu', kernel_initializer='he_uniform'))
 
         model.add(Dense(128, activation='relu',
                         kernel_initializer='he_uniform'))
@@ -68,7 +68,7 @@ class DQNAgent:
         model.add(Dense(32, activation='relu',
                         kernel_initializer='he_uniform'))
 
-        model.add(Dense(8, activation='relu',
+        model.add(Dense(16, activation='relu',
                         kernel_initializer='he_uniform'))
 
         model.add(Dense(self.action_size, activation='linear'))
@@ -162,14 +162,15 @@ class DQNAgent:
         pylab.plot(episodes, max_q_mean, 'b')
         pylab.xlabel("Episodes")
         pylab.ylabel("Average Q Value")
-        # pylab.savefig("qvalues_24_mem100k.png")
+        pylab.savefig("qvalues_mem10000_final.png")
         pylab.show()
+
         pylab.figure(1)
         pylab.plot(episodes, scores, 'b')
         pylab.xlabel("Episodes")
         pylab.ylabel("Score")
+        pylab.savefig("scores_mem10000_final.png")
         pylab.show()
-        # pylab.savefig("scores_24_mem100k.png")
 
 
 ###############################################################################
