@@ -8,7 +8,6 @@ from keras.layers import Dense
 from keras.optimizers import Adam
 from keras.models import Sequential
 
-
 EPISODES = 1000  # Maximum number of episodes
 
 
@@ -17,7 +16,7 @@ EPISODES = 1000  # Maximum number of episodes
 class DQNAgent:
     # Constructor for the agent (invoked when DQN is first called in main)
     def __init__(self, state_size, action_size):
-        self.check_solve = False  # If True, stop if you satisfy solution configuration
+        self.check_solve = True  # If True, stop if you satisfy solution configuration
         self.render = False  # If you want to see Cartpole learning, then change to True
 
         # Get size of state and action
@@ -27,13 +26,13 @@ class DQNAgent:
         # Modify here
 
         # Set hyper parameters for the DQN. Do not adjust those labeled as Fixed.
-        self.discount_factor = 0.8
-        self.learning_rate = 0.01
+        self.discount_factor = 0.995
+        self.learning_rate = 0.0001
         self.epsilon = 0.02  # Fixed
         self.batch_size = 32  # Fixed
-        self.memory_size = 5000
+        self.memory_size = 2000
         self.train_start = 1000  # Fixed
-        self.target_update_frequency = 10
+        self.target_update_frequency = 1
 
         # Number of test states for Q value plots
         self.test_state_no = 10000
@@ -58,9 +57,19 @@ class DQNAgent:
     def build_model(self):
         model = Sequential()
 
-        model.add(Dense(24, input_shape=(self.state_size,), activation='relu'))
+        model.add(Dense(64, input_shape=(self.state_size,), activation='relu', kernel_initializer='he_uniform'))
 
-        model.add(Dense(24, activation='relu'))
+        model.add(Dense(128, activation='relu',
+                        kernel_initializer='he_uniform'))
+
+        model.add(Dense(64, activation='relu',
+                        kernel_initializer='he_uniform'))
+
+        model.add(Dense(32, activation='relu',
+                        kernel_initializer='he_uniform'))
+
+        model.add(Dense(8, activation='relu',
+                        kernel_initializer='he_uniform'))
 
         model.add(Dense(self.action_size, activation='linear'))
 
@@ -82,12 +91,12 @@ class DQNAgent:
         # Insert your e-greedy policy code here
         # Tip 1: Use the random package to generate a random action.
         # Tip 2: Use keras.model.predict() to compute Q-values from the state.
-        #generate random variable
-        if np.random.rand()<=self.epsilon:
-            #choose random action
+        # generate random variable
+        if np.random.rand() <= self.epsilon:
+            # choose random action
             action = random.randrange(self.action_size)
         else:
-            action=np.argmax(self.model.predict(state)[0])
+            action = np.argmax(self.model.predict(state))
 
         return action
 
@@ -123,29 +132,28 @@ class DQNAgent:
         target_val = self.target_model.predict(
             update_target)  # Generate the target values for training the outer loop target network
 
-
         # Q Learning: get maximum Q value at s' from target network
         ###############################################################################
         ###############################################################################
         # Insert your Q-learning code here
         # Tip 1: Observe that the Q-values are stored in the variable target
         # Tip 2: What is the Q-value of the action taken at the last state of the episode?
-        print(done)
-        
+
         for i in range(self.batch_size):  # For every batch
-
-            #check if it is done, so terminal state
+            target[i][action[i]] = random.randint(0, 1)
+            # check if it is done, so terminal state
             if not done[i]:
-                target[i][action[i]] = reward[i]+self.discount_factor*np.amax(target_val[i][0])
+                target[i][action[i]] = reward[i] + self.discount_factor * np.amax(target_val[i,:])
             else:
-                target[i][action[i]]=reward[i]
+                target[i][action[i]] = reward[i]
+
 
         ###############################################################################
         ###############################################################################
 
-        # Train the inner loop network
         self.model.fit(update_input, target, batch_size=self.batch_size,
                        epochs=1, verbose=0)
+        # Train the inner loop network
         return
 
     # Plots the score per episode as well as the maximum q value per episode, averaged over precollected states.
@@ -154,13 +162,14 @@ class DQNAgent:
         pylab.plot(episodes, max_q_mean, 'b')
         pylab.xlabel("Episodes")
         pylab.ylabel("Average Q Value")
-        pylab.savefig("qvalues_24_mem100k.png")
-
+        # pylab.savefig("qvalues_24_mem100k.png")
+        pylab.show()
         pylab.figure(1)
         pylab.plot(episodes, scores, 'b')
         pylab.xlabel("Episodes")
         pylab.ylabel("Score")
-        pylab.savefig("scores_24_mem100k.png")
+        pylab.show()
+        # pylab.savefig("scores_24_mem100k.png")
 
 
 ###############################################################################
@@ -230,7 +239,7 @@ if __name__ == "__main__":
                 # At the end of very episode, update the target network
                 if e % agent.target_update_frequency == 0:
                     agent.update_target_model()
-                # Plot the play time for every episode
+                # # Plot the play time for every episode
                 scores.append(score)
                 episodes.append(e)
 
