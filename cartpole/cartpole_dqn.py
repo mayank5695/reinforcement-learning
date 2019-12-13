@@ -15,7 +15,7 @@ EPISODES = 1000  # Maximum number of episodes
 # Q function approximation with NN, experience replay, and target network
 class DQNAgent:
     # Constructor for the agent (invoked when DQN is first called in main)
-    def __init__(self, state_size, action_size):
+    def __init__(self, state_size, action_size, discount, learning, mem):
         self.check_solve = True  # If True, stop if you satisfy solution configuration
         self.render = False  # If you want to see Cartpole learning, then change to True
 
@@ -26,11 +26,11 @@ class DQNAgent:
         # Modify here
 
         # Set hyper parameters for the DQN. Do not adjust those labeled as Fixed.
-        self.discount_factor = 0.995
-        self.learning_rate = 0.00025
+        self.discount_factor = discount
+        self.learning_rate = learning
         self.epsilon = 0.02  # Fixed
         self.batch_size = 32  # Fixed
-        self.memory_size = 10000
+        self.memory_size = mem
         self.train_start = 1000  # Fixed
         self.target_update_frequency = 1
 
@@ -143,10 +143,9 @@ class DQNAgent:
             target[i][action[i]] = random.randint(0, 1)
             # check if it is done, so terminal state
             if not done[i]:
-                target[i][action[i]] = reward[i] + self.discount_factor * np.amax(target_val[i,:])
+                target[i][action[i]] = reward[i] + self.discount_factor * np.amax(target_val[i, :])
             else:
                 target[i][action[i]] = reward[i]
-
 
         ###############################################################################
         ###############################################################################
@@ -158,25 +157,27 @@ class DQNAgent:
 
     # Plots the score per episode as well as the maximum q value per episode, averaged over precollected states.
     def plot_data(self, episodes, scores, max_q_mean):
+
+        file = str(self.learning_rate) + "_" + str(self.discount_factor) + "_" + str(self.memory_size)
         pylab.figure(0)
         pylab.plot(episodes, max_q_mean, 'b')
         pylab.xlabel("Episodes")
         pylab.ylabel("Average Q Value")
-        pylab.savefig("qvalues_mem10000_final.png")
+        pylab.savefig("qvalues_" + file + '.png')
         pylab.show()
 
         pylab.figure(1)
         pylab.plot(episodes, scores, 'b')
         pylab.xlabel("Episodes")
         pylab.ylabel("Score")
-        pylab.savefig("scores_mem10000_final.png")
+        pylab.savefig("scores_" + file + '.png')
         pylab.show()
 
 
 ###############################################################################
 ###############################################################################
 
-if __name__ == "__main__":
+def run_final(parameter):
     # For CartPole-v0, maximum episode length is 200
     env = gym.make('CartPole-v0')  # Generate Cartpole-v0 environment object from the gym library
     # Get state and action sizes from the environment
@@ -184,7 +185,7 @@ if __name__ == "__main__":
     action_size = env.action_space.n
 
     # Create agent, see the DQNAgent __init__ method for details
-    agent = DQNAgent(state_size, action_size)
+    agent = DQNAgent(state_size, action_size, parameter[0], parameter[1], parameter[2])
 
     # Collect test states for plotting Q values using uniform random policy
     test_states = np.zeros((agent.test_state_no, state_size))
@@ -225,7 +226,7 @@ if __name__ == "__main__":
             action = agent.get_action(state)
             next_state, reward, done, info = env.step(action)
 
-            #add negative reward
+            # add negative reward
 
             next_state = np.reshape(next_state, [1, state_size])  # Reshape next_state similarly to state
 
@@ -244,9 +245,10 @@ if __name__ == "__main__":
                 scores.append(score)
                 episodes.append(e)
 
-                print("episode:", e, "  score:", score, " q_value:", max_q_mean[e], "  memory length:",
-                      len(agent.memory))
-
+                if e % 100 == 0:
+                    print("episode:", e, "  score:", score, " q_value:", max_q_mean[e], "  memory length:",
+                          len(agent.memory))
+                    print("mem:", agent.memory_size, "  dis:", agent.discount_factor, " learn:", agent.learning_rate)
                 # if the mean of scores of last 100 episodes is bigger than 195
                 # stop training
                 if agent.check_solve:
@@ -255,3 +257,17 @@ if __name__ == "__main__":
                         agent.plot_data(episodes, scores, max_q_mean[:e + 1])
                         sys.exit()
     agent.plot_data(episodes, scores, max_q_mean)
+
+
+if __name__ == "__main__":
+
+    # discount,learning,memsize
+
+    # parameters = [[0.95, 0.005, 1000], [0.80, 0.005, 1000], [0.995, 0.005, 1000], [0.995, 0.01, 1000],
+    #               [0.995, 0.0005, 1000], [0.995, 0.00025, 1000], [0.995, 0.00025, 500], [0.995, 0.00025, 20000],
+    #               [0.995, 0.00025, 5000]]
+
+    # for parameter in parameters:
+    #     run_final(parameter)
+    #     print(parameter, " is done.")
+    run_final([0.995,0.00025,2000])

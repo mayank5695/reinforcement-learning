@@ -162,14 +162,14 @@ class DQNAgent:
         pylab.plot(episodes, max_q_mean, 'b')
         pylab.xlabel("Episodes")
         pylab.ylabel("Average Q Value")
-        pylab.savefig("qvalues_final_double_hyp.png")
+        pylab.savefig("qvalues_final_final_2.png")
         pylab.show()
         pylab.figure(1)
         pylab.plot(episodes, scores, 'b')
         pylab.xlabel("Episodes")
         pylab.ylabel("Score")
+        pylab.savefig("scores_final_final_2.png")
         pylab.show()
-        pylab.savefig("scores_final_double_hyp.png")
 
 
 ###############################################################################
